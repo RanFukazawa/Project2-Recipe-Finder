@@ -1,0 +1,28 @@
+<form action="/" method="post">
+  <div class="row mb-3">
+    <label for="name" class="col-sm-2 col-form-label">Recipe name:</label>
+    <div class="col-sm-10">
+      <input type="text" class="form-control" id="name" required>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="time" class="col-sm-2 col-form-label">Cooking time (minutes):</label>
+    <div class="col-sm-10">
+      <input type="number" class="form-control" id="time" min="0" required>
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="ingredients" class="col-sm-2 col-form-label">Ingredients:</label>
+    <div class="col-sm-10">
+      <textarea class="form-control" id="ingredients" row="5" required></textarea> 
+    </div>
+  </div>
+  <div class="row mb-3">
+    <label for="step" class="col-sm-2 col-form-label">Steps (one per line):</label>
+    <div class="col-sm-10">
+      <textarea class="form-control" id="step" row="20" required></textarea> 
+    </div>
+  </div>
+  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+  <button type="submit" class="btn btn-primary">Upload</button>
+</form>
