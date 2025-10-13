@@ -14,62 +14,78 @@ function MyMongoDB() {
     return { client, externalRecipes, userRecipes };
   };
 
-  // External recipes methods
-  me.getRecipes = async () => {
-    /*
-     * Requires the MongoDB Node.js Driver
-     * https://mongodb.github.io/node-mongodb-native
-     */
-
-    const filter = {};
-    const projection = {};
-    const sort = {};
-    const limit = 20;
-
+  // Retrieve external recipe data
+  me.getRecipes = async ({ query = {}, pageSize = 20, page = 0 } = {}) => {
     const { client, externalRecipes } = await connect();
+
     try {
-      const cursor = externalRecipes.find(filter, { projection, sort, limit });
-      return await cursor.toArray();
+      const data = await externalRecipes
+        .find(query)
+        .limit(pageSize)
+        .skip(pageSize * page)
+        .toArray();
+      console.log("Fetched external recipes from MongoDB", data);
+      return data;
+    } catch (err) {
+      console.error("Error fetching external recipes from MongoDB", err);
+      throw err;
+    } finally {
+      await client.close();
+    }
+  };
+
+  // Count the total number of external recipes
+  me.getRecipesCount = async (query = {}) => {
+    const { client, externalRecipes } = await connect();
+
+    try {
+      const count = await externalRecipes.countDocuments(query);
+      return count;
+    } catch (err) {
+      console.error("Error counting external recipes from MongoDB", err);
+      throw err;
     } finally {
       await client.close();
     }
   };
 
   // User recipes methods
-  me.getUserRecipes = async (userID = null) => {
-    const { client, userRecipes } = await connect();
-    try {
-      const filter = userID ? { userID } : {};
-      const cursor = userRecipes.find(filter).sort({ createdAt: -1 });
-      return await cursor.toArray();
-    } finally {
-      await client.close();
-    }
-  };
+  // me.getUserRecipes = async (userID = null) => {
+  //   const { client, userRecipes } = await connect();
+  //   try {
+  //     const filter = userID ? { userID } : {};
+  //     const cursor = userRecipes.find(filter).sort({ createdAt: -1 });
+  //     return await cursor.toArray();
+  //   } finally {
+  //     await client.close();
+  //   }
+  // };
 
-  // create
-  me.insertUserRecipes = async (formData) => {
-    const { client, userRecipes } = await connect();
-    try {
-      const document = {
-        userID: formData.userID,
-        name: formData.name,
-        time: parseInt(formData.time),
-        ingredients: formData.ingredients,
-        steps: formData.steps,
-        n_ingredients: formData.ingredients.length,
-        n_steps: formData.steps.length,
-        createdAt: new Date(),
-      };
+  // // create
+  // me.insertUserRecipes = async (formData) => {
+  //   const { client, userRecipes } = await connect();
+  //   try {
+  //     const document = {
+  //       userID: formData.userID,
+  //       name: formData.name,
+  //       time: parseInt(formData.time),
+  //       ingredients: formData.ingredients,
+  //       steps: formData.steps,
+  //       n_ingredients: formData.ingredients.length,
+  //       n_steps: formData.steps.length,
+  //       createdAt: new Date(),
+  //     };
 
-      const result = await userRecipes.insertOne(document);
-      return result;
-  } finally {
-    await client.close();
-  };
+  //     const result = await userRecipes.insertOne(document);
+  //     return result;
+  //   } finally {
+  //     await client.close();
+  //   }
 
-  // me.updateUserRecipes = 
+  //   // me.updateUserRecipes =
+  // };
   return me;
 }
 
-export default MyMongoDB();
+const myMongoDB = MyMongoDB();
+export default myMongoDB;

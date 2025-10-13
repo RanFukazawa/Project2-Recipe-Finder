@@ -11,15 +11,15 @@ class NavBar extends HTMLElement {
           </a>
         </li>
         <li><a href="./home.html">Home</a></li>
-        <li><a href="#">Recipe</a></li>
+        <li><a href="./all_recipes.html">Recipe</a></li>
         <li><a href="#">Data</a></li>
         <li><a href="https://github.com/RanFukazawa/project1-personal_homepage">GitHub</a></li>
       </ul>
     
       <ul>
         <li><a href="home.html">Recipe Finder</a></li>
-        <li class="hideOnMobile"><a href="#">Home</a></li>
-        <li class="hideOnMobile"><a href="#">Recipe</a></li>
+        <li class="hideOnMobile"><a href="./home.html">Home</a></li>
+        <li class="hideOnMobile"><a href="./all_recipes.html">Recipe</a></li>
         <li class="hideOnMobile"><a href="#">Data</a></li>
         <li class="hideOnMobile">
           <a href="https://github.com/RanFukazawa/project1-personal_homepage">
