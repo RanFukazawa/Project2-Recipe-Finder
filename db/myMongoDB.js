@@ -1,11 +1,12 @@
-import { MongoClient } from "mongodb";
+import { MongoClient, ObjectId } from "mongodb";
 
 // Database operations
 function MyMongoDB() {
   const me = {};
+  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:47017/";
 
   const connect = async () => {
-    const client = await MongoClient.connect("mongodb://localhost:47017/");
+    const client = await MongoClient.connect(MONGODB_URI);
     console.log("Successfully connected to MongoDB");
     const db = client.db("recipeFinder");
     const externalRecipes = db.collection("external_recipes");
@@ -14,18 +15,40 @@ function MyMongoDB() {
     return { client, externalRecipes, userRecipes };
   };
 
-  // Retrieve external recipe data
-  me.getRecipes = async ({ query = {}, pageSize = 20, page = 0 } = {}) => {
+  me.getRecipesTotalPages = async ({ query, limit }) => {
     const { client, externalRecipes } = await connect();
-
+    console.log("Connected to MongoDB for total pages calculation");
     try {
+      const totalPages = Math.ceil(
+        (await externalRecipes.countDocuments(query)) / limit,
+      );
+      console.log("Total pages:", totalPages);
+      return totalPages;
+    } finally {
+      await client.close();
+    }
+  };
+
+  // Retrieve external recipe data
+  me.getRecipes = async ({ query = {}, page = 1 }) => {
+    const projection = {};
+    const limit = 20;
+
+    const { client, externalRecipes } = await connect();
+    try {
+      const totalPages = await me.getRecipesTotalPages({ query, limit });
+
+      if (page < 1) page = 1;
+      if (page > totalPages) page = totalPages;
       const data = await externalRecipes
-        .find(query)
-        .limit(pageSize)
-        .skip(pageSize * page)
+        .find(query, {
+          projection,
+          limit,
+          skip: (page - 1) * limit,
+        })
         .toArray();
       console.log("Fetched external recipes from MongoDB", data);
-      return data;
+      return { data, totalPages, page };
     } catch (err) {
       console.error("Error fetching external recipes from MongoDB", err);
       throw err;
@@ -34,56 +57,94 @@ function MyMongoDB() {
     }
   };
 
-  // Count the total number of external recipes
-  me.getRecipesCount = async (query = {}) => {
-    const { client, externalRecipes } = await connect();
-
+  // Retrieve user custom recipes
+  me.getUserRecipes = async (userId = null) => {
+    const { client, userRecipes } = await connect();
     try {
-      const count = await externalRecipes.countDocuments(query);
-      return count;
-    } catch (err) {
-      console.error("Error counting external recipes from MongoDB", err);
-      throw err;
+      const filter = userId ? { userId } : {};
+      const cursor = userRecipes.find(filter).sort({ createdAt: -1 });
+      return await cursor.toArray();
     } finally {
       await client.close();
     }
   };
 
-  // User recipes methods
-  // me.getUserRecipes = async (userID = null) => {
-  //   const { client, userRecipes } = await connect();
-  //   try {
-  //     const filter = userID ? { userID } : {};
-  //     const cursor = userRecipes.find(filter).sort({ createdAt: -1 });
-  //     return await cursor.toArray();
-  //   } finally {
-  //     await client.close();
-  //   }
-  // };
+  me.getUserRecipeById = async (recipeId) => {
+    const { client, userRecipes } = await connect();
+    try {
+      const mongoID = ObjectId.createFromHexString(recipeId);
+      return await userRecipes.findOne({ _id: mongoID });
+    } finally {
+      await client.close();
+    }
+  };
 
-  // // create
-  // me.insertUserRecipes = async (formData) => {
-  //   const { client, userRecipes } = await connect();
-  //   try {
-  //     const document = {
-  //       userID: formData.userID,
-  //       name: formData.name,
-  //       time: parseInt(formData.time),
-  //       ingredients: formData.ingredients,
-  //       steps: formData.steps,
-  //       n_ingredients: formData.ingredients.length,
-  //       n_steps: formData.steps.length,
-  //       createdAt: new Date(),
-  //     };
+  // Create user custom recipes
+  me.insertUserRecipes = async (formData) => {
+    const { client, userRecipes } = await connect();
+    try {
+      const document = {
+        userId: formData.userId,
+        name: formData.name,
+        time: parseInt(formData.time),
+        ingredients: formData.ingredients,
+        steps: formData.steps,
+        n_ingredients: formData.ingredients.length,
+        n_steps: formData.steps.length,
+        createdAt: new Date(),
+      };
 
-  //     const result = await userRecipes.insertOne(document);
-  //     return result;
-  //   } finally {
-  //     await client.close();
-  //   }
+      const result = await userRecipes.insertOne(document);
+      return result;
+    } finally {
+      await client.close();
+    }
+  };
 
-  //   // me.updateUserRecipes =
-  // };
+  // Update user custom recipes
+  me.updateUserRecipes = async (recipeId, updateData) => {
+    const { client, userRecipes } = await connect();
+
+    try {
+      const allowedUpdates = {};
+
+      if (updateData.name !== undefined) {
+        allowedUpdates.name = updateData.name;
+      }
+      if (updateData.time !== undefined) {
+        allowedUpdates.time = updateData.time;
+      }
+      if (updateData.ingredients !== undefined) {
+        allowedUpdates.ingredients = updateData.ingredients;
+      }
+      if (updateData.steps !== undefined) {
+        allowedUpdates.steps = updateData.steps;
+      }
+
+      allowedUpdates.updatedAt = new Date();
+
+      const result = await userRecipes.updateOne(
+        { _id: recipeId },
+        { $set: allowedUpdates },
+      );
+      return result;
+    } finally {
+      await client.close();
+    }
+  };
+
+  me.deleteUserRecipe = async (recipeId) => {
+    const { client, userRecipes } = await connect();
+    try {
+      const result = await userRecipes.deleteOne({
+        _id: recipeId,
+      });
+      return result;
+    } finally {
+      await client.close();
+    }
+  };
+
   return me;
 }
 
