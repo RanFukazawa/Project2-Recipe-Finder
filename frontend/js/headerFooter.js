@@ -17,7 +17,7 @@ class NavBar extends HTMLElement {
       </ul>
     
       <ul>
-        <li><a href="home.html">Recipe Finder</a></li>
+        <li><a href="index.html">Recipe Finder</a></li>
         <li class="hideOnMobile"><a href="./index.html">Home</a></li>
         <li class="hideOnMobile"><a href="./all-recipes.html">Recipe</a></li>
         <li class="hideOnMobile"><a href="#">Data</a></li>
