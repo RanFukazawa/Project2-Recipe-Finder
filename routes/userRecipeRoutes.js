@@ -106,7 +106,8 @@ router.put("/:id", async (req, res) => {
 });
 
 // DELETE user recipe
-router.delete("/:id", async (req, res) => {
+router.delete("/", async (req, res) => {
+  console.log("DELETE /api/user-recipes/ called");
   try {
     const result = await myDB.deleteUserRecipe(req.params.id);
 

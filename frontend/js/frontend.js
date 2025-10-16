@@ -40,6 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
       containerId: "recipes",
       paginationId: "pagination",
       showPagination: true,
+      showActions: false,
     });
     externalRecipes.reloadFinder();
   }
@@ -56,6 +57,7 @@ document.addEventListener("DOMContentLoaded", () => {
       containerId: "user-recipes",
       paginationId: "user-pagination",
       showPagination: false,
+      showActions: true,
     });
     userRecipes.reloadFinder();
   }

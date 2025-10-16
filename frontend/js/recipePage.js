@@ -8,6 +8,7 @@ export default function Finder(config = {}) {
     containerId = "recipes",
     paginationId = "pagination",
     showPagination = true,
+    showActions = false,
   } = config;
 
   let page = new URLSearchParams(window.location.search).get("page") || 1;
@@ -23,16 +24,71 @@ export default function Finder(config = {}) {
     main.prepend(alert);
   };
 
+  // Show success message
+  me.showSuccess = (msg) => {
+    const main = document.querySelector("main");
+    const alert = document.createElement("div");
+    alert.className = `alert alert-success alert-dismissible fade show`;
+    alert.role = "alert";
+    alert.innerHTML = `
+      ${msg}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    main.prepend(alert);
+
+    setTimeout(() => {
+      alert.remove();
+    }, 3000);
+  };
+
+  // Delete recipe
+  const deleteRecipe = async (recipeId) => {
+    if (!confirm("Are you sure you want to delete this recipe?")) {
+      return;
+    }
+
+    try {
+      const res = await fetch(`${apiEndpoint}/${recipeId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to delete recipe");
+      }
+
+      me.showSuccess("Recipe successfully deleted");
+      me.reloadFinder();
+    } catch (error) {
+      console.error("Error deleting recipe:", error);
+      alert("Failed to delete recipe. Please try again.");
+    }
+  };
+
   // Single recipe
   const renderRecipe = (recipe) => `
     <div class="list-group-item">
-    <h5 class="mb-1">${recipe.name.charAt(0).toUpperCase()}${recipe.name.slice(1)}</h5>
-    <div>${recipe.minutes} min</div>
-    <div>${recipe.ingredients.join(", ")}</div>
+      <div class="d-flex justify-content-between align-items-start">
+        <div class="flex-grow-1">
+          <h5 class="mb-1">${recipe.name.charAt(0).toUpperCase()}${recipe.name.slice(1)}</h5>
+          <div class="text-muted">⏱️ ${recipe.minutes} min</div>
+          <div class="mt-2">${recipe.ingredients.join(", ")}</div>
+        </div>
+        ${
+          showActions
+            ? `
+          <div class="btn-group" role="group">
+            <button class="btn btn-sm btn-outline-danger" onclick="window.deleteRecipe_${recipe._id}()">
+              <i class="bi bi-trash"></i> Delete
+            </button>
+          </div>
+          `
+            : ""
+        }
+      </div>
     </div>
-    `;
+  `;
 
-  // A collection of recipe
+  // A collection of recipes
   const renderRecipes = (recipes) => {
     const recipesDiv = document.getElementById(containerId);
 
@@ -48,6 +104,13 @@ export default function Finder(config = {}) {
       ${recipes.length === 0 ? `<p>No recipes found.</p>` : ""}
     </div>
     `;
+
+    // Attach event handlers for edit/delete buttons
+    if (showActions) {
+      recipes.forEach((recipe) => {
+        window[`deleteRecipe_${recipe._id}`] = () => deleteRecipe(recipe._id);
+      });
+    }
   };
 
   me.reloadFinder = async () => {
