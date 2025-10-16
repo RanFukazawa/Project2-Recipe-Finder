@@ -11,21 +11,14 @@ async function connect() {
     return { client, db };
   }
 
-  console.log("🔌 Connecting to MongoDB...");
-
-  // Minimal options - let MongoDB driver handle SSL automatically
   const options = {
     serverSelectionTimeoutMS: 10000,
   };
 
   client = new MongoClient(uri, options);
   await client.connect();
-
-  // Test the connection
   await client.db("admin").command({ ping: 1 });
-
   db = client.db(dbName);
-  console.log("✅ Connected to MongoDB");
 
   return { client, db };
 }
@@ -67,7 +60,7 @@ function MyMongoDB() {
   me.getUserRecipeById = async (recipeId) => {
     const { db } = await connect();
     const userRecipes = db.collection("user_recipes");
-    const mongoID = new ObjectId(recipeId);
+    const mongoID = ObjectId.createFromHexString(recipeId);
     return await userRecipes.findOne({ _id: mongoID });
   };
 
@@ -99,7 +92,7 @@ function MyMongoDB() {
     }
     allowedUpdates.updatedAt = new Date();
 
-    const mongoID = new ObjectId(recipeId);
+    const mongoID = ObjectId.createFromHexString(recipeId);
     return await userRecipes.updateOne(
       { _id: mongoID },
       { $set: allowedUpdates },
@@ -110,7 +103,7 @@ function MyMongoDB() {
     const { db } = await connect();
     const userRecipes = db.collection("user_recipes");
 
-    const mongoID = new ObjectId(recipeId);
+    const mongoID = ObjectId.createFromHexString(recipeId);
     return await userRecipes.deleteOne({ _id: mongoID });
   };
 
