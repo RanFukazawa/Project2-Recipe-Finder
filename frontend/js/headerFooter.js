@@ -10,16 +10,16 @@ class NavBar extends HTMLElement {
             </svg>
           </a>
         </li>
-        <li><a href="./index.html">Home</a></li>
-        <li><a href="./all-recipes.html">Recipes</a></li>
+        <li><a href="/index.html">Home</a></li>
+        <li><a href="/all-recipes.html">Recipes</a></li>
         <li><a href="https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data">Data</a></li>
         <li><a href="https://github.com/RanFukazawa/Project2-Recipe-Finder">GitHub</a></li>
       </ul>
     
       <ul>
         <li><a href="index.html">Recipe Finder</a></li>
-        <li class="hideOnMobile"><a href="./index.html">Home</a></li>
-        <li class="hideOnMobile"><a href="./all-recipes.html">Recipes</a></li>
+        <li class="hideOnMobile"><a href="/index.html">Home</a></li>
+        <li class="hideOnMobile"><a href="/all-recipes.html">Recipes</a></li>
         <li class="hideOnMobile"><a href="https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data">Data</a></li>
         <li class="hideOnMobile">
           <a href="https://github.com/RanFukazawa/Project2-Recipe-Finder">

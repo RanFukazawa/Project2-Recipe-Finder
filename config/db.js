@@ -1,31 +1,29 @@
-// db.js
 import { MongoClient } from "mongodb";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-const uri = process.env.MONGODB_URI;
-const client = new MongoClient(uri);
-
-let db;
+let cachedClient = null;
+let cachedDb = null;
 
 export async function connectToDatabase() {
-  try {
-    await client.connect();
-    db = client.db("recipeFinder"); // name your database
-    console.log("✅ Connected to MongoDB Atlas");
-    return db;
-  } catch (err) {
-    console.error("❌ MongoDB connection error:", err);
-    process.exit(1);
+  if (cachedClient && cachedDb) {
+    console.log("Using cached database connection");
+    return { client: cachedClient, db: cachedDb };
   }
-}
 
-export function getDb() {
-  if (!db) {
-    throw new Error(
-      "❗ Database not initialized. Call connectToDatabase() first.",
-    );
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is not defined");
   }
-  return db;
+
+  console.log("Creating new database connection");
+
+  const client = await MongoClient.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  });
+
+  const db = client.db("recipeFinder");
+
+  cachedClient = client;
+  cachedDb = db;
+
+  return { client, db };
 }
