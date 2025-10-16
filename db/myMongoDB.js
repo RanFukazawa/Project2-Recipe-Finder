@@ -3,11 +3,16 @@ import { MongoClient, ObjectId } from "mongodb";
 // Database operations
 function MyMongoDB() {
   const me = {};
-  const uri = process.env.MONGODB_URI || "mongodb://localhost:47017/";
+  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:47017/";
+  console.log("MongoDB URI exists:", !!process.env.MONGODB_URI); // Debug log
 
   const connect = async () => {
-    const client = await MongoClient.connect(uri);
-    console.log("Successfully connected to MongoDB");
+    const client = await MongoClient.connect(MONGODB_URI, {
+      usenewUrlParser: true,
+      useUnifiedTopology: true,
+    });
+    console.log("Successfully connected to MongoDB"); // Debug log
+
     const db = client.db("recipeFinder");
     const externalRecipes = db.collection("external_recipes");
     const userRecipes = db.collection("user_recipes");
