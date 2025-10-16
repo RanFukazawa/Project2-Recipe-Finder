@@ -3,10 +3,10 @@ import { MongoClient, ObjectId } from "mongodb";
 // Database operations
 function MyMongoDB() {
   const me = {};
-  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:47017/";
+  const uri = process.env.MONGODB_URI || "mongodb://localhost:47017/";
 
   const connect = async () => {
-    const client = await MongoClient.connect(MONGODB_URI);
+    const client = await MongoClient.connect(uri);
     console.log("Successfully connected to MongoDB");
     const db = client.db("recipeFinder");
     const externalRecipes = db.collection("external_recipes");
