@@ -26,6 +26,12 @@ export default function Finder() {
   // A collection of recipe
   const renderRecipes = (recipes) => {
     const recipesDiv = document.getElementById("recipes");
+
+    // Check if recipesDiv exists
+    if (!recipesDiv) {
+      return;
+    }
+
     recipesDiv.innerHTML = `
     <h3 class="mt-4">All Recipes</h3>
     <div id="recipes-list" class="list-group mt-3">

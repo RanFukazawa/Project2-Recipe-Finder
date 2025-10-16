@@ -86,7 +86,7 @@ function MyMongoDB() {
       const document = {
         userId: formData.userId,
         name: formData.name,
-        time: parseInt(formData.time),
+        minutes: parseInt(formData.minutes),
         ingredients: formData.ingredients,
         steps: formData.steps,
         n_ingredients: formData.ingredients.length,
@@ -111,8 +111,8 @@ function MyMongoDB() {
       if (updateData.name !== undefined) {
         allowedUpdates.name = updateData.name;
       }
-      if (updateData.time !== undefined) {
-        allowedUpdates.time = updateData.time;
+      if (updateData.minutes !== undefined) {
+        allowedUpdates.minutes = updateData.minutes;
       }
       if (updateData.ingredients !== undefined) {
         allowedUpdates.ingredients = updateData.ingredients;

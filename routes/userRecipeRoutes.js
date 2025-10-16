@@ -31,9 +31,12 @@ router.get("/:id", async (req, res) => {
 // POST create (upload) user custom recipe
 router.post("/", async (req, res) => {
   try {
-    const { name, time, ingredients, steps } = req.body;
+    console.log("POST /api/user-recipes called"); // Add this
+    console.log("Request body:", req.body); // Add this
 
-    if (!name || !time || !ingredients || !steps) {
+    const { name, minutes, ingredients, steps } = req.body;
+
+    if (!name || !minutes || !ingredients || !steps) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
@@ -51,10 +54,9 @@ router.post("/", async (req, res) => {
 
     const recipeData = {
       name: name.trim(),
-      time: parseInt(time),
+      minutes: parseInt(minutes),
       ingredients: ingredients.map((i) => i.trim()).filter((i) => i),
       steps: steps.map((s) => s.trim()).filter((s) => s),
-      userId: req.user?.id || null,
       isPublic: false,
     };
 
@@ -73,14 +75,14 @@ router.post("/", async (req, res) => {
 // PUT update user recipe
 router.put("/:id", async (req, res) => {
   try {
-    const { name, time, ingredients, steps } = req.body;
+    const { name, minutes, ingredients, steps } = req.body;
 
     const updateData = {};
     if (name) {
       updateData.name = name.trim();
     }
-    if (time) {
-      updateData.time = parseInt(time);
+    if (minutes) {
+      updateData.minutes = parseInt(minutes);
     }
     if (ingredients) {
       updateData.ingredients = ingredients
