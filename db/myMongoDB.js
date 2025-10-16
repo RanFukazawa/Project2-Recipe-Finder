@@ -1,41 +1,33 @@
 import { MongoClient, ObjectId } from "mongodb";
-import dotenv from "dotenv";
 
-dotenv.config();
-
-const uri = process.env.MONGODB_URI || "mongodb://localhost:47017/";
-const dbName = process.env.MONGODB_DBNAME || "recipeFinder";
+const uri = process.env.MONGODB_URI;
+const dbName = "recipeFinder";
 
 let client;
 let db;
 
 async function connect() {
-  // Reuse connection if already connected
   if (client && db) {
-    console.log("♻️ Reusing existing MongoDB connection");
     return { client, db };
   }
 
-  console.log("🔌 Creating new MongoDB connection");
+  console.log("🔌 Connecting to MongoDB...");
 
+  // Minimal options - let MongoDB driver handle SSL automatically
   const options = {
-    tls: true,
-    tlsAllowInvalidCertificates: true, // For Vercel compatibility
     serverSelectionTimeoutMS: 10000,
-    socketTimeoutMS: 45000,
   };
 
-  try {
-    client = new MongoClient(uri, options);
-    await client.connect();
-    db = client.db(dbName);
+  client = new MongoClient(uri, options);
+  await client.connect();
 
-    console.log("✅ Connected to MongoDB:", dbName);
-    return { client, db };
-  } catch (error) {
-    console.error("❌ MongoDB connection error:", error);
-    throw error;
-  }
+  // Test the connection
+  await client.db("admin").command({ ping: 1 });
+
+  db = client.db(dbName);
+  console.log("✅ Connected to MongoDB");
+
+  return { client, db };
 }
 
 function MyMongoDB() {
