@@ -1,155 +1,110 @@
 import { MongoClient, ObjectId } from "mongodb";
+import dotenv from "dotenv";
 
-// Database operations
+dotenv.config();
+
+const uri = process.env.MONGODB_URI || "mongodb://localhost:27017/";
+const dbName = process.env.MONGODB_DBNAME || "recipeFinder";
+
+let client;
+let db;
+
+async function connect() {
+  // Reuse connection if already connected
+  if (client && db) {
+    return { client, db };
+  }
+
+  client = new MongoClient(uri, { useUnifiedTopology: true });
+  await client.connect();
+  db = client.db(dbName);
+
+  console.log("✅ Connected to MongoDB:", dbName);
+  return { client, db };
+}
+
 function MyMongoDB() {
   const me = {};
-  const MONGODB_URI = process.env.MONGODB_URI || "mongodb://localhost:47017/";
-  console.log("MongoDB URI exists:", !!process.env.MONGODB_URI); // Debug log
-
-  const connect = async () => {
-    const client = await MongoClient.connect(MONGODB_URI, {
-      usenewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("Successfully connected to MongoDB"); // Debug log
-
-    const db = client.db("recipeFinder");
-    const externalRecipes = db.collection("external_recipes");
-    const userRecipes = db.collection("user_recipes");
-
-    return { client, externalRecipes, userRecipes };
-  };
 
   me.getRecipesTotalPages = async ({ query, limit }) => {
-    const { client, externalRecipes } = await connect();
-    console.log("Connected to MongoDB for total pages calculation");
-    try {
-      const totalPages = Math.ceil(
-        (await externalRecipes.countDocuments(query)) / limit,
-      );
-      console.log("Total pages:", totalPages);
-      return totalPages;
-    } finally {
-      await client.close();
-    }
+    const { db } = await connect();
+    const externalRecipes = db.collection("external_recipes");
+    const totalDocs = await externalRecipes.countDocuments(query);
+    return Math.ceil(totalDocs / limit);
   };
 
-  // Retrieve external recipe data
   me.getRecipes = async ({ query = {}, page = 1 }) => {
-    const projection = {};
     const limit = 20;
+    const { db } = await connect();
+    const externalRecipes = db.collection("external_recipes");
 
-    const { client, externalRecipes } = await connect();
-    try {
-      const totalPages = await me.getRecipesTotalPages({ query, limit });
+    const totalPages = await me.getRecipesTotalPages({ query, limit });
+    page = Math.min(Math.max(page, 1), totalPages);
 
-      if (page < 1) page = 1;
-      if (page > totalPages) page = totalPages;
-      const data = await externalRecipes
-        .find(query, {
-          projection,
-          limit,
-          skip: (page - 1) * limit,
-        })
-        .toArray();
-      console.log("Fetched external recipes from MongoDB", data);
-      return { data, totalPages, page };
-    } catch (err) {
-      console.error("Error fetching external recipes from MongoDB", err);
-      throw err;
-    } finally {
-      await client.close();
-    }
+    const data = await externalRecipes
+      .find(query)
+      .limit(limit)
+      .skip((page - 1) * limit)
+      .toArray();
+
+    return { data, totalPages, page };
   };
 
-  // Retrieve user custom recipes
   me.getUserRecipes = async (userId = null) => {
-    const { client, userRecipes } = await connect();
-    try {
-      const filter = userId ? { userId } : {};
-      const cursor = userRecipes.find(filter).sort({ createdAt: -1 });
-      return await cursor.toArray();
-    } finally {
-      await client.close();
-    }
+    const { db } = await connect();
+    const userRecipes = db.collection("user_recipes");
+    const filter = userId ? { userId } : {};
+    return await userRecipes.find(filter).sort({ createdAt: -1 }).toArray();
   };
 
   me.getUserRecipeById = async (recipeId) => {
-    const { client, userRecipes } = await connect();
-    try {
-      const mongoID = ObjectId.createFromHexString(recipeId);
-      return await userRecipes.findOne({ _id: mongoID });
-    } finally {
-      await client.close();
-    }
+    const { db } = await connect();
+    const userRecipes = db.collection("user_recipes");
+    const mongoID = new ObjectId(recipeId);
+    return await userRecipes.findOne({ _id: mongoID });
   };
 
-  // Create user custom recipes
   me.insertUserRecipes = async (formData) => {
-    const { client, userRecipes } = await connect();
-    try {
-      const document = {
-        userId: formData.userId,
-        name: formData.name,
-        minutes: parseInt(formData.minutes),
-        ingredients: formData.ingredients,
-        steps: formData.steps,
-        n_ingredients: formData.ingredients.length,
-        n_steps: formData.steps.length,
-        createdAt: new Date(),
-      };
+    const { db } = await connect();
+    const userRecipes = db.collection("user_recipes");
 
-      const result = await userRecipes.insertOne(document);
-      return result;
-    } finally {
-      await client.close();
-    }
+    const document = {
+      userId: formData.userId,
+      name: formData.name,
+      minutes: parseInt(formData.minutes),
+      ingredients: formData.ingredients,
+      steps: formData.steps,
+      n_ingredients: formData.ingredients.length,
+      n_steps: formData.steps.length,
+      createdAt: new Date(),
+    };
+
+    return await userRecipes.insertOne(document);
   };
 
-  // Update user custom recipes
   me.updateUserRecipes = async (recipeId, updateData) => {
-    const { client, userRecipes } = await connect();
+    const { db } = await connect();
+    const userRecipes = db.collection("user_recipes");
 
-    try {
-      const allowedUpdates = {};
-
-      if (updateData.name !== undefined) {
-        allowedUpdates.name = updateData.name;
-      }
-      if (updateData.minutes !== undefined) {
-        allowedUpdates.minutes = updateData.minutes;
-      }
-      if (updateData.ingredients !== undefined) {
-        allowedUpdates.ingredients = updateData.ingredients;
-      }
-      if (updateData.steps !== undefined) {
-        allowedUpdates.steps = updateData.steps;
-      }
-
-      allowedUpdates.updatedAt = new Date();
-
-      const mongoID = ObjectId.createFromHexString(recipeId);
-      const result = await userRecipes.updateOne(
-        { _id: mongoID },
-        { $set: allowedUpdates },
-      );
-      return result;
-    } finally {
-      await client.close();
+    const allowedUpdates = {};
+    for (const key of ["name", "minutes", "ingredients", "steps"]) {
+      if (updateData[key] !== undefined) allowedUpdates[key] = updateData[key];
     }
+    allowedUpdates.updatedAt = new Date();
+
+    const mongoID = new ObjectId(recipeId);
+    return await userRecipes.updateOne(
+      { _id: mongoID },
+      { $set: allowedUpdates },
+    );
   };
 
   me.deleteUserRecipe = async (recipeId) => {
-    const { client, userRecipes } = await connect();
-    try {
-      const mongoID = ObjectId.createFromHexString(recipeId);
-      const result = await userRecipes.deleteOne({
-        _id: mongoID,
-      });
-      return result;
-    } finally {
-      await client.close();
-    }
+    const { db } = await connect();
+    const userRecipes = db.collection("user_recipes");
+
+    const mongoID = new ObjectId(recipeId);
+    return await userRecipes.deleteOne({ _id: mongoID });
   };
 
   return me;
