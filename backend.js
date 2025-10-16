@@ -7,11 +7,12 @@ const app = express();
 
 app.use(express.json()); // Parse JSON bodies
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static("frontend"));
 
 // Routes
-app.use("/api", recipeRouter);
 app.use("/api/user-recipes", userRecipesRouter);
+app.use("/api", recipeRouter);
+
+app.use(express.static("frontend"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

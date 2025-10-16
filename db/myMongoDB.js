@@ -123,8 +123,9 @@ function MyMongoDB() {
 
       allowedUpdates.updatedAt = new Date();
 
+      const mongoID = ObjectId.createFromHexString(recipeId);
       const result = await userRecipes.updateOne(
-        { _id: recipeId },
+        { _id: mongoID },
         { $set: allowedUpdates },
       );
       return result;
@@ -136,8 +137,9 @@ function MyMongoDB() {
   me.deleteUserRecipe = async (recipeId) => {
     const { client, userRecipes } = await connect();
     try {
+      const mongoID = ObjectId.createFromHexString(recipeId);
       const result = await userRecipes.deleteOne({
-        _id: recipeId,
+        _id: mongoID,
       });
       return result;
     } finally {
