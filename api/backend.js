@@ -4,9 +4,9 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
-import recipeRouter from "./routes/recipeRoutes.js";
-import userRecipesRouter from "./routes/userRecipeRoutes.js";
-import { connectToDatabase } from "./config/db.js";
+import recipeRouter from "../routes/recipeRoutes.js";
+import userRecipesRouter from "../routes/userRecipeRoutes.js";
+import { connectToDatabase } from "../config/db.js";
 
 dotenv.config();
 const app = express();
@@ -32,11 +32,6 @@ app.get("/api/health", async (req, res) => {
   } catch {
     res.status(500).json({ status: "fail", mongodb: false });
   }
-});
-
-// Catch-all for SPA frontend routes
-app.get("*", (req, res) => {
-  res.sendFile(path.join(__dirname, "frontend", "index.html"));
 });
 
 // Start server after DB connection
