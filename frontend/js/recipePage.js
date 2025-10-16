@@ -1,6 +1,15 @@
 // Rendering recipe page
-export default function Finder() {
+export default function Finder(config = {}) {
   const me = {};
+
+  // Configuration with defaults
+  const {
+    apiEndpoint = "api/recipes",
+    containerId = "recipes",
+    paginationId = "pagination",
+    showPagination = true,
+  } = config;
+
   let page = new URLSearchParams(window.location.search).get("page") || 1;
   let totalPages = 5;
 
@@ -25,15 +34,15 @@ export default function Finder() {
 
   // A collection of recipe
   const renderRecipes = (recipes) => {
-    const recipesDiv = document.getElementById("recipes");
+    const recipesDiv = document.getElementById(containerId);
 
     // Check if recipesDiv exists
     if (!recipesDiv) {
+      console.warn(`Container with id "${containerId}" not found`);
       return;
     }
 
-    recipesDiv.innerHTML = `
-    <h3 class="mt-4">All Recipes</h3>
+    recipesDiv.innerHTML = `    
     <div id="recipes-list" class="list-group mt-3">
       ${recipes.map(renderRecipe).join("\n")}
       ${recipes.length === 0 ? `<p>No recipes found.</p>` : ""}
@@ -42,7 +51,11 @@ export default function Finder() {
   };
 
   me.reloadFinder = async () => {
-    const res = await fetch(`/api/recipes/?page=${page}`);
+    const url = showPagination ? `${apiEndpoint}?page=${page}` : apiEndpoint;
+
+    console.log(`Fetching from: ${url}`);
+
+    const res = await fetch(url);
     if (!res.ok) {
       me.showError({ msg: "Failed to fetch recipes", res });
       console.error("Error fetching recipes:", res.status, res.statusText);
@@ -52,11 +65,23 @@ export default function Finder() {
     const data = await res.json();
     console.log("Fetched recipes data:", data);
 
-    totalPages = data.totalPages || 5;
-    page = data.page || page;
+    if (showPagination && data.totalPages) {
+      // Paginated response
+      totalPages = data.totalPages;
+      page = data.page || page;
+      renderRecipes(data.data);
+      me.renderPagination();
+    } else {
+      // Non-paginated response (just an array of recipes)
+      renderRecipes(Array.isArray(data) ? data : data.data || []);
 
-    renderRecipes(data.data);
-    me.renderPagination();
+      if (showPagination) {
+        const paginationDiv = document.getElementById(paginationId);
+        if (paginationDiv) {
+          paginationDiv.innerHTML = "";
+        }
+      }
+    }
   };
 
   const switchToPage =
@@ -91,9 +116,15 @@ export default function Finder() {
   };
 
   me.renderPagination = () => {
-    const paginationDiv = document.getElementById("pagination");
+    const paginationDiv = document.getElementById(paginationId);
+
+    if (!paginationDiv) {
+      console.warn(`Pagination container with id "${paginationId}" not found`);
+      return;
+    }
+
     const div = document.createElement("div");
-    div.setAttribute("aria-label", "Page navigation example");
+    div.setAttribute("aria-label", "Page navigation");
 
     const ul = document.createElement("ul");
     ul.className = "pagination";
