@@ -12,7 +12,7 @@ class NavBar extends HTMLElement {
         </li>
         <li><a href="/index.html">Home</a></li>
         <li><a href="/all-recipes.html">Recipes</a></li>
-        <li><a href="https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data">Data</a></li>
+        <li><a href="https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data">External Data</a></li>
         <li><a href="https://github.com/RanFukazawa/Project2-Recipe-Finder">GitHub</a></li>
       </ul>
     
@@ -20,7 +20,7 @@ class NavBar extends HTMLElement {
         <li><a href="index.html">Recipe Finder</a></li>
         <li class="hideOnMobile"><a href="/index.html">Home</a></li>
         <li class="hideOnMobile"><a href="/all-recipes.html">Recipes</a></li>
-        <li class="hideOnMobile"><a href="https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data">Data</a></li>
+        <li class="hideOnMobile"><a href="https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data">External Data</a></li>
         <li class="hideOnMobile">
           <a href="https://github.com/RanFukazawa/Project2-Recipe-Finder">
             <svg xmlns="http://www.w3.org/2000/svg" width="24px" height="24px" fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
