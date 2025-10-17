@@ -79,3 +79,8 @@ nav a:hover {
   height: 550px;
   color: black;
 }
+
+.bi-star-fill {
+  color: gold;
+  font-size: 60px;
+}

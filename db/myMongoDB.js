@@ -50,6 +50,82 @@ function MyMongoDB() {
     return { data, totalPages, page };
   };
 
+  // User favorite recipes methods
+  me.getFavoriteRecipes = async (userId = null) => {
+    const { db } = await connect();
+    try {
+      const filter = userId ? { userId } : {};
+      const cursor = db
+        .collection("favorite_recipes")
+        .find(filter)
+        .sort({ createdAt: -1 });
+      return await cursor.toArray();
+    } catch (error) {
+      console.error("Error fetching favorite recipes:", error);
+      throw error;
+    }
+  };
+
+  me.addFavoriteRecipe = async (recipeData) => {
+    const { db } = await connect();
+    try {
+      const existing = await db.collection("favorite_recipes").findOne({
+        recipeId: recipeData.recipeId,
+        userId: recipeData.userId,
+      });
+
+      if (existing) {
+        return { alreadyExists: true, _id: existing._id };
+      }
+
+      const document = {
+        userId: recipeData.userId || null,
+        recipeId: recipeData.recipeId,
+        name: recipeData.name,
+        minutes: recipeData.minutes,
+        ingredients: recipeData.ingredients,
+        steps: recipeData.steps,
+        tags: recipeData.tags || {},
+        createdAt: new Date(),
+      };
+
+      const result = db.collection("favorite_recipes").insertOne(document);
+      return result;
+    } catch (error) {
+      console.error("Error adding favorite recipe:", error);
+      throw error;
+    }
+  };
+
+  me.removeFavoriteRecipe = async (favoriteId) => {
+    const { db } = await connect();
+    try {
+      const mongoID = ObjectId.createFromHexString(favoriteId);
+      const result = await db.collection("favorite_recipes").deleteOne({
+        _id: mongoID,
+      });
+      return result;
+    } catch (error) {
+      console.error("Error removing favorite recipe:", error);
+      throw error;
+    }
+  };
+
+  me.isFavorited = async (recipeId, userId = null) => {
+    const { db } = await connect();
+    try {
+      const filter = { recipeId: recipeId };
+      if (userId) filter.userId = userId;
+
+      const favorite = await db.collection("favorite_recipes").findOne(filter);
+      return !!favorite;
+    } catch (error) {
+      console.error("Error checking if favorited:", error);
+      throw error;
+    }
+  };
+
+  // User custom recipes methods
   me.getUserRecipes = async (userId = null) => {
     const { db } = await connect();
     const userRecipes = db.collection("user_recipes");

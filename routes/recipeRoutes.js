@@ -1,5 +1,5 @@
 import express from "express";
-import myDB from "../db/myMongoDB.js";
+import myMongoDB from "../db/myMongoDB.js";
 
 const router = express.Router();
 
@@ -12,7 +12,7 @@ router.get("/", async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const query = {};
 
-    const recipes = await myDB.getRecipes({ query, page });
+    const recipes = await myMongoDB.getRecipes({ query, page });
 
     console.log("✅ Recipes fetched:", recipes.data?.length || 0, "recipes");
     res.json(recipes);
@@ -29,7 +29,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
   try {
     console.log("📥 GET /api/recipes/:id called with id:", req.params.id);
-    const recipe = await myDB.getRecipeById(req.params.id);
+    const recipe = await myMongoDB.getRecipeById(req.params.id);
 
     if (!recipe) {
       return res.status(404).json({ message: "Recipe not found" });

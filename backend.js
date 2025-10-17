@@ -2,7 +2,8 @@
 import express from "express";
 
 import recipeRouter from "./routes/recipeRoutes.js";
-import userRecipesRouter from "./routes/userRecipeRoutes.js";
+import userRecipeRouter from "./routes/userRecipeRoutes.js";
+import favoriteRecipeRouter from "./routes/favoriteRecipeRoutes.js";
 import myMongoDB from "./db/myMongoDB.js";
 
 const app = express();
@@ -12,7 +13,8 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
-app.use("/api/user-recipes", userRecipesRouter);
+app.use("/api/user-recipes", userRecipeRouter);
+app.use("/api/favorite-recipes", favoriteRecipeRouter);
 app.use("/api/recipes", recipeRouter);
 
 // Health check

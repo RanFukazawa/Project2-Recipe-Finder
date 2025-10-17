@@ -36,10 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Initializing external recipes finder"); // Debug
     const externalRecipes = Finder({
       apiEndpoint: "/api/recipes",
-      title: "All Recipes",
       containerId: "recipes",
       paginationId: "pagination",
       showPagination: true,
+      showFavorites: true,
       showActions: false,
     });
     externalRecipes.reloadFinder();
@@ -53,12 +53,29 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log("Initializing user recipes finder"); // Debug
     const userRecipes = Finder({
       apiEndpoint: "/api/user-recipes",
-      title: "Custom Recipes",
       containerId: "user-recipes",
       paginationId: "user-pagination",
       showPagination: false,
+      showFavorites: false,
       showActions: true,
     });
     userRecipes.reloadFinder();
+  }
+
+  const favoriteRecipesContainer = document.getElementById("favorite-recipes");
+  console.log("favorite-recipes container:", favoriteRecipesContainer); // Debug
+
+  if (favoriteRecipesContainer) {
+    console.log("Initializing favorite recipes finder"); // Debug
+    const favoriteRecipes = Finder({
+      apiEndpoint: "/api/favorite-recipes",
+      containerId: "favorite-recipes",
+      paginationId: "favorite-pagination",
+      showPagination: true,
+      showActions: false,
+      showFavorites: false,
+      showFavoriteActions: true,
+    });
+    favoriteRecipes.reloadFinder();
   }
 });

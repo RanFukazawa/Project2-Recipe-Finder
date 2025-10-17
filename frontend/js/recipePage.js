@@ -9,6 +9,8 @@ export default function Finder(config = {}) {
     paginationId = "pagination",
     showPagination = true,
     showActions = false,
+    showFavorites = false,
+    showFavoriteActions = false,
   } = config;
 
   let page = new URLSearchParams(window.location.search).get("page") || 1;
@@ -41,7 +43,7 @@ export default function Finder(config = {}) {
     }, 3000);
   };
 
-  // Delete recipe
+  // Delete user custom recipe
   const deleteRecipe = async (recipeId) => {
     if (!confirm("Are you sure you want to delete this recipe?")) {
       return;
@@ -64,7 +66,7 @@ export default function Finder(config = {}) {
     }
   };
 
-  // Update recipe
+  // Update user custom recipe
   const editRecipe = async (recipeId) => {
     try {
       const res = await fetch(`${apiEndpoint}/${recipeId}`);
@@ -82,38 +84,128 @@ export default function Finder(config = {}) {
     }
   };
 
-  // Single recipe
-  const renderRecipe = (recipe) => `
-    <div class="list-group-item">
-      <div class="d-flex justify-content-between align-items-start">
-        <div class="flex-grow-1">
-          <h5 class="mb-1">${recipe.name.charAt(0).toUpperCase()}${recipe.name.slice(1)}</h5>
-          <div class="text-muted">⏱️ ${recipe.minutes} min</div>
-          <div class="mt-2">${recipe.ingredients.join(", ")}</div>
-        </div>
-        ${
-          showActions
-            ? `
-          <div class="btn-group" role="group">
-            <button class="btn btn-sm btn-outline-primary" onclick="window.editRecipe_${recipe._id}()">
-              <i class="bi bi-pencil"></i> Edit
-            </button>
-            <button class="btn btn-sm btn-outline-danger" onclick="window.deleteRecipe_${recipe._id}()">
-              <i class="bi bi-trash"></i> Delete
-            </button>
-          </div>
-          `
-            : ""
+  // Add favorite recipe
+  const addToFavorites = async (recipe) => {
+    try {
+      console.log("⭐️ Adding to favorites:", recipe);
+
+      const response = await fetch("/api/favorite-recipes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          recipeId: recipe.id,
+          name: recipe.name,
+          minutes: recipe.minutes,
+          ingredients: recipe.ingredients,
+          steps: recipe.steps,
+          tags: recipe.tags || [],
+          nutrition: recipe.nutrition || [],
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        if (result.alreadyExists) {
+          me.showSuccess("Recipe already in favorites");
+        } else {
+          me.showSuccess("Added to favorites!");
         }
+      } else {
+        alert(result.message || "Failed to add to favorites");
+      }
+    } catch (error) {
+      console.error("Error adding to favorites:", error);
+      alert("Failed to add to favorites");
+    }
+  };
+
+  // Delete favorite recipes
+  const deleteFavorite = async (favoriteId) => {
+    if (!confirm("Remove this recipe from favorites?")) {
+      return;
+    }
+
+    try {
+      console.log("🗑️ Removing from favorites:", favoriteId);
+
+      const res = await fetch(`/api/favorite-recipes/${favoriteId}`, {
+        method: "DELETE",
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to remove from favorites");
+      }
+
+      me.showSuccess("Removed from favorites");
+      me.reloadFinder();
+    } catch (error) {
+      console.error("Error removing from favorites:", error);
+      alert("Failed to remove from favorites. Please try again.");
+    }
+  };
+
+  // Single recipe
+  const renderRecipe = (recipe) => {
+    const recipeId = recipe.id || recipe._id;
+
+    return `
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="flex-grow-1">
+            <h5 class="mb-1">${recipe.name.charAt(0).toUpperCase()}${recipe.name.slice(1)}</h5>
+            <div class="text-muted">⏱️ ${recipe.minutes} min</div>
+            <div class="mt-2">${recipe.ingredients.join(", ")}</div>
+          </div>
+          <div class="btn-group" role="group">
+            ${
+              showFavorites
+                ? `
+              <button 
+                class="btn btn-sm btn-outline-warning" 
+                onclick="window.addToFavorites_${recipeId}()" 
+                title="Add to favorites">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-star-fill" viewBox="0 0 16 16">
+                  <path d="M3.612 15.443c-.386.198-.824-.149-.746-.592l.83-4.73L.173 6.765c-.329-.314-.158-.888.283-.95l4.898-.696L7.538.792c.197-.39.73-.39.927 0l2.184 4.327 4.898.696c.441.062.612.636.282.95l-3.522 3.356.83 4.73c.078.443-.36.79-.746.592L8 13.187l-4.389 2.256z"/>
+                </svg>    
+              </button>
+              `
+                : ""
+            }
+            ${
+              showFavoriteActions
+                ? `
+              <button 
+                class="btn btn-sm btn-outline-danger" 
+                onclick="window.deleteFavorite_${recipeId}()" 
+                title="Remove from favorites">
+                <i class="bi bi-trash"></i> Remove
+              </button>
+              `
+                : ""
+            }
+            ${
+              showActions
+                ? `
+              <button class="btn btn-sm btn-outline-primary" onclick="window.editRecipe_${recipe._id}()">
+                <i class="bi bi-pencil"></i> Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger" onclick="window.deleteRecipe_${recipe._id}()">
+                <i class="bi bi-trash"></i> Delete
+              </button>
+              `
+                : ""
+            }
+          </div>
+        </div>
       </div>
-    </div>
-  `;
+    `;
+  };
 
   // A collection of recipes
   const renderRecipes = (recipes) => {
     const recipesDiv = document.getElementById(containerId);
 
-    // Check if recipesDiv exists
     if (!recipesDiv) {
       console.warn(`Container with id "${containerId}" not found`);
       return;
@@ -126,7 +218,23 @@ export default function Finder(config = {}) {
     </div>
     `;
 
-    // Attach event handlers for edit/delete buttons
+    // Attach event handlers for favorites (add star)
+    if (showFavorites) {
+      recipes.forEach((recipe) => {
+        const recipeId = recipe.id || recipe._id;
+        window[`addToFavorites_${recipeId}`] = () => addToFavorites(recipe);
+      });
+    }
+
+    // Attach event handlers for favorite actions (delete from favorites)
+    if (showFavoriteActions) {
+      recipes.forEach((recipe) => {
+        window[`deleteFavorite_${recipe._id}`] = () =>
+          deleteFavorite(recipe._id);
+      });
+    }
+
+    // Attach event handlers for user recipe actions (edit/delete)
     if (showActions) {
       recipes.forEach((recipe) => {
         window[`editRecipe_${recipe._id}`] = () => editRecipe(recipe._id);
