@@ -107,7 +107,7 @@ Or **Deploy via Vercel Dashboard:**
 ## Author
 Ran Fukazawa
 
-[Visit Recipe Finder Web App](https://ranfukazawa.github.io/project1-personal_homepage/)
+[Visit Recipe Finder Web App](https://project2-recipe-finder.vercel.app/index.html)
 
 ## Reference
 This project was created as part of [CS5610 Project 2](https://northeastern.instructure.com/courses/225993/assignments/2901101) coursework.
