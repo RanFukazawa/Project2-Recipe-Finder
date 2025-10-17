@@ -69,9 +69,9 @@ Recipe Finder is a full-stack web application that allows users to browse a coll
 
 ### Deployment Steps
 1. Set up MongoDB Atlas:
-- Create a free cluster at MongoDB Atlas
-- Create a database user
-- Whitelist all IPs (0.0.0.0/0) under Network Access
+    - Create a free cluster at MongoDB Atlas
+    - Create a database user
+    - Whitelist all IPs (0.0.0.0/0) under Network Access
 - Get your connection string
 
 2. Install Vercel CLI (optional):
