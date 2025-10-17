@@ -4,7 +4,7 @@
 Recipe Finder is a full-stack web application that allows users to browse a collection of external recipes ([Kaggle Food.com Recipes and Interactions](https://www.kaggle.com/datasets/shuyangli94/food-com-recipes-and-user-interactions/data)), create their own custom recipes, and save favorites. The application provides an intuitive interface for recipe management with features including browsing, adding custom recipes, editing and deleting personal recipes, and maintaining a favorites collection. 
 
 ## Screenshot
-<img width="1463" height="808" alt="A thumbnail of Ran Fukazawa personal homepage" src="https://ranfukazawa.github.io/project1-personal_homepage/image/thumbnail_personalHomepage.png" />
+<img width="1463" height="808" alt="A thumbnail of Recipe Finder Web App" src="https://project2-recipe-finder.vercel.app/img/Project2_thumbnail.png" />
 
 
 ## Tech Requirements
