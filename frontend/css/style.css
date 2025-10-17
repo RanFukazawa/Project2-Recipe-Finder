@@ -84,3 +84,31 @@ nav a:hover {
   color: gold;
   font-size: 60px;
 }
+
+@media(max-width: 800px) {
+  .name{
+      font-size: 12vh;
+  }
+  .intro {
+      font-size: 6vh;
+  }
+
+  .hideOnMobile {
+      display: none;
+  }
+  .menu-button {
+      display: block;
+  }
+}
+
+@media(max-width: 400px) {
+  .name {
+      font-size: 100%;
+  }
+  .intro {
+      font-size: 50%s;
+  }
+  .sidebar {
+      width: 100%;
+  }
+}
