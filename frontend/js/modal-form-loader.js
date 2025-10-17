@@ -29,24 +29,11 @@ function attachFormHandler() {
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
-    console.log("Form submitted!"); // Debug
-    console.log("name element:", document.getElementById("name"));
-    console.log("minutes element:", document.getElementById("minutes"));
-    console.log("ingredients element:", document.getElementById("ingredients"));
-    console.log("steps element:", document.getElementById("steps"));
-
     // Get form values
     const nameValue = document.getElementById("name").value;
     const minutesValue = document.getElementById("minutes").value;
     const ingredientsText = document.getElementById("ingredients").value;
     const stepsText = document.getElementById("steps").value;
-
-    console.log("Form data:", {
-      nameValue,
-      minutesValue,
-      ingredientsText,
-      stepsText,
-    }); // Debug
 
     const ingredients = ingredientsText
       .split("\n")
@@ -57,8 +44,6 @@ function attachFormHandler() {
       .split("\n")
       .map((item) => item.trim())
       .filter((item) => item.length > 0);
-
-    console.log("Parsed data:", { ingredients, steps }); // Debug
 
     // Validate arrays are not empty
     if (ingredients.length === 0) {
@@ -73,7 +58,7 @@ function attachFormHandler() {
 
     // Data to send
     const recipeData = {
-      name: nameValue.trim(),
+      name: nameValue.toLowerCase().trim(),
       minutes: parseInt(minutesValue),
       ingredients: ingredients,
       steps: steps,
@@ -117,12 +102,12 @@ function attachFormHandler() {
         alert("Recipe uploaded successfully!");
         form.reset(); // Clear form
 
-        // Close modal after 5 second
+        // Close modal after 2 second
         setTimeout(() => {
           const modalElement = document.getElementById("recipeModal");
           const modal = bootstrap.Modal.getInstance(modalElement);
           if (modal) modal.hide();
-        }, 5000);
+        }, 2000);
       } else {
         alert(result.message || "Failed to upload recipe");
       }

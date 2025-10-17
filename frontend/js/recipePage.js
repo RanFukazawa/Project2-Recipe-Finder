@@ -64,6 +64,24 @@ export default function Finder(config = {}) {
     }
   };
 
+  // Update recipe
+  const editRecipe = async (recipeId) => {
+    try {
+      const res = await fetch(`${apiEndpoint}/${recipeId}`);
+      if (!res.ok) {
+        throw new Error("Failed to fetch recipe.");
+      }
+
+      const recipe = await res.json();
+
+      const event = new CustomEvent("openEditModal", { detail: recipe });
+      window.dispatchEvent(event);
+    } catch (error) {
+      console.error("Error fetching recipe:", error);
+      alert("Failed to load recipe. Please try again.");
+    }
+  };
+
   // Single recipe
   const renderRecipe = (recipe) => `
     <div class="list-group-item">
@@ -77,6 +95,9 @@ export default function Finder(config = {}) {
           showActions
             ? `
           <div class="btn-group" role="group">
+            <button class="btn btn-sm btn-outline-primary" onclick="window.editRecipe_${recipe._id}()">
+              <i class="bi bi-pencil"></i> Edit
+            </button>
             <button class="btn btn-sm btn-outline-danger" onclick="window.deleteRecipe_${recipe._id}()">
               <i class="bi bi-trash"></i> Delete
             </button>
@@ -108,6 +129,7 @@ export default function Finder(config = {}) {
     // Attach event handlers for edit/delete buttons
     if (showActions) {
       recipes.forEach((recipe) => {
+        window[`editRecipe_${recipe._id}`] = () => editRecipe(recipe._id);
         window[`deleteRecipe_${recipe._id}`] = () => deleteRecipe(recipe._id);
       });
     }
@@ -224,6 +246,10 @@ export default function Finder(config = {}) {
     paginationDiv.innerHTML = "";
     paginationDiv.appendChild(div);
   };
+
+  window.addEventListener("reloadRecipes", () => {
+    me.reloadFinder();
+  });
 
   return me;
 }

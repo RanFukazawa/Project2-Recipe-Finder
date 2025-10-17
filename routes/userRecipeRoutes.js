@@ -73,16 +73,26 @@ router.post("/", async (req, res) => {
 // PUT update user recipe
 router.put("/:id", async (req, res) => {
   try {
+    console.log("📥 PUT /api/user-recipes/:id called");
+    console.log("Recipe ID:", req.params.id);
+    console.log("Request body:", req.body);
+
     const { name, minutes, ingredients, steps } = req.body;
 
     const updateData = {};
     if (name) updateData.name = name.trim();
     if (minutes) updateData.minutes = parseInt(minutes);
     if (ingredients)
-      updateData.ingredients = ingredients.map((i) => i.trim()).filter(Boolean);
-    if (steps) updateData.steps = steps.map((s) => s.trim()).filter(Boolean);
+      updateData.ingredients = ingredients
+        .map((i) => i.trim())
+        .filter((i) => i);
+    if (steps) updateData.steps = steps.map((s) => s.trim()).filter((s) => s);
+
+    console.log("📝 Update data:", updateData);
 
     const result = await myMongoDB.updateUserRecipes(req.params.id, updateData);
+
+    console.log("✅ Update result:", result);
 
     if (result.matchedCount === 0) {
       return res.status(404).json({ message: "Recipe not found" });
@@ -90,8 +100,10 @@ router.put("/:id", async (req, res) => {
 
     res.json({ message: "Recipe updated successfully" });
   } catch (error) {
-    console.error("Error updating recipe:", error);
-    res.status(500).json({ message: "Failed to update recipe" });
+    console.error("❌ Error updating recipe:", error);
+    res
+      .status(500)
+      .json({ message: "Failed to update recipe", error: error.message });
   }
 });
 
