@@ -33,6 +33,27 @@ app.get("/api/health", async (req, res) => {
   }
 });
 
+app.get("/debug/static", (req, res) => {
+  const fs = require("fs");
+  const path = require("path");
+
+  try {
+    const frontendPath = path.join(process.cwd(), "frontend");
+    const files = fs.readdirSync(frontendPath);
+
+    res.json({
+      cwd: process.cwd(),
+      frontendPath: frontendPath,
+      files: files,
+    });
+  } catch (error) {
+    res.json({
+      error: error.message,
+      cwd: process.cwd(),
+    });
+  }
+});
+
 // Serve static files
 app.use(express.static("frontend"));
 
