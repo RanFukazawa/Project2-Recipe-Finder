@@ -31,7 +31,7 @@ window.addEventListener("openEditModal", async (event) => {
   const modalBody = document.getElementById("editModalFormContent");
 
   try {
-    const response = await fetch("./edit-form.html");
+    const response = await fetch("/edit-form.html");
     const html = await response.text();
     modalBody.innerHTML = html;
 
